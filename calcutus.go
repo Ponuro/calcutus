@@ -16,11 +16,11 @@ func main() {
 	fmt.Println("Пример ввода: 2+2")
 	fmt.Println("- - - - - - - - - - - - - - - - - - - - - -")
 	fmt.Println("2. Римские: - (От I до X включительно)")
-	fmt.Println("Пример ввода: II+II\n")
+	fmt.Printf("Пример ввода: II+II\n")
 
 	// Подсказка о допустимых выражениях
 	fmt.Println("________________________________________________")
-	fmt.Println(" F.A.Q Недопустим ввод выражение вида: I+2, 2+I; ")
+	fmt.Println(" F.A.Q Недопустим ввод выражение вида: I+2, 2+I;")
 	fmt.Println("________________________________________________")
 
 	// Чтение ввода пользователя
@@ -50,22 +50,49 @@ func main() {
 	a := input[:operatorIndex]
 	b := input[operatorIndex+1:]
 
-	// Проверка, являются ли числа римскими
-	isRoman := isRomanNumber(a) && isRomanNumber(b)
+	// Проверка, является ли число арабским, и применение отрицания только для арабских чисел
+	if isRomanNumber(a) {
+		// Если первое число римское, и оно отрицательное, выводим ошибку
+		if isNegative {
+			fmt.Println("Ошибка: в римской системе нет отрицательных значений")
+			return
+		}
+	} else {
+		// Применение отрицания, если число отрицательное
+		if isNegative {
+			numA, err := strconv.Atoi(a)
+			if err != nil || numA < 1 || numA > 10 {
+				fmt.Println("Ошибка: введите первое арабское число от 1 до 10 включительно")
+				return
+			}
+			a = strconv.Itoa(numA)
+		}
+	}
 
-	// Парсинг чисел
-	numA, validA := parseNumber(a, isRoman, "первое")
-	numB, validB := parseNumber(b, isRoman, "второе")
-
-	// Проверка деления на ноль
-	if operatorIndex < len(input)-1 && input[operatorIndex+1] == '0' && (input[operatorIndex] == '/' || input[operatorIndex] == '%') {
+	if input[operatorIndex] == '/' && b == "0" {
 		fmt.Println("Ошибка: деление на ноль")
 		return
 	}
 
 	// Проверка диапазона для арабских чисел
+	numA, validA := parseNumber(a, isRomanNumber(a), "первое")
+	numB, validB := parseNumber(b, isRomanNumber(b), "второе")
 	if !validA || !validB || numA < 1 || numA > 10 || numB < 1 || numB > 10 {
 		fmt.Println("Ошибка: некорректные числа")
+		return
+	}
+
+	// Проверка, что оба числа имеют один и тот же тип (или оба римские, или оба арабские)
+	if isRomanNumber(a) != isRomanNumber(b) {
+		fmt.Println("Ошибка: использование смешанных типов чисел недопустимо")
+		return
+	}
+
+	// Разрешение операции минус для смешанных типов чисел
+	if input[operatorIndex] == '-' && isRomanNumber(a) && isRomanNumber(b) {
+		// Ничего не делаем, разрешаем операцию минус для смешанных типов
+	} else if isRomanNumber(a) != isRomanNumber(b) {
+		fmt.Println("Ошибка: использование смешанных типов чисел недопустимо")
 		return
 	}
 
@@ -74,34 +101,20 @@ func main() {
 		numA *= -1
 	}
 
-	// Определение операции
-	operator := string(input[operatorIndex])
-
 	// Выполнение операции
 	result := 0
-	switch operator {
+
+	switch string(input[operatorIndex]) {
 	case "+":
 		result = numA + numB
 
 	case "-":
-		if isRoman && numA < numB {
-			fmt.Println("Ошибка: некорректное выражение")
-			return
-		}
 		result = numA - numB
 
 	case "*":
-		if isRoman && numA <= numB {
-			fmt.Println("Ошибка: некорректное выражение")
-			return
-		}
 		result = numA * numB
 
 	case "/":
-		if numB == 0 {
-			fmt.Println("Ошибка: деление на ноль")
-			return
-		}
 		result = numA / numB
 
 	default:
@@ -110,7 +123,8 @@ func main() {
 	}
 
 	// Вывод результата
-	if isRoman {
+	isRomanResult := isRomanNumber(a) && isRomanNumber(b)
+	if isRomanResult {
 		romanResult := arabicToRoman(result)
 		fmt.Println("Результат:", romanResult)
 	} else {
@@ -118,7 +132,7 @@ func main() {
 	}
 }
 
-// Функция для проверки, является ли число римским
+// Функция для проверки, являются ли числа римскими
 func isRomanNumber(str string) bool {
 	romanDigits := "IVX"
 	for _, char := range str {
@@ -131,8 +145,8 @@ func isRomanNumber(str string) bool {
 
 // Функция для преобразования арабского числа в римское
 func arabicToRoman(num int) string {
-	romanDigits := []string{"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C"}
-	romanValues := []int{1, 4, 5, 9, 10, 40, 50, 90, 100}
+	romanDigits := []string{"I", "IV", "V", "IX", "X"}
+	romanValues := []int{1, 4, 5, 9, 10}
 
 	result := ""
 	for i := len(romanDigits) - 1; i >= 0; i-- {
@@ -158,13 +172,8 @@ func parseNumber(str string, isRoman bool, variableName string) (int, bool) {
 		if arabicNum, exists := romanToArabic[str]; exists {
 			num = arabicNum
 		} else {
-			if variableName == "первое" {
-				fmt.Printf("Ошибка: введите %s римское число от I до X включительно\n", variableName)
-				return 0, false
-			} else if variableName == "второе" {
-				fmt.Printf("Ошибка: введите %s римское число от I до X включительно\n", variableName)
-				return 0, false
-			}
+			fmt.Printf("Ошибка: введите %s римское число от I до X включительно\n", variableName)
+			return 0, false
 		}
 
 	} else {
