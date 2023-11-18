@@ -25,7 +25,7 @@ func main() {
 
 	// Чтение ввода пользователя
 	var input string
-	fmt.Print("\nВведите выражение: ")
+	fmt.Print("Введите выражение: ")
 	_, err := fmt.Scan(&input)
 	if err != nil {
 		fmt.Println("Ошибка чтения ввода:", err)
@@ -58,9 +58,8 @@ func main() {
 			return
 		}
 	} else {
-		// Применение отрицания, если число отрицательное
 		var errA error
-		a, errA = processArabicNumber(a, isNegative, "первое")
+		a, errA = processArabicNumber(a, isNegative)
 		if errA != nil {
 			fmt.Println(errA)
 			return
@@ -142,14 +141,16 @@ func isRomanNumber(str string) bool {
 }
 
 // Функция для обработки отрицательных чисел и преобразования арабских чисел
-func processArabicNumber(input string, isNegative bool, variableName string) (string, error) {
+func processArabicNumber(input string, isNegative bool) (string, error) {
 	if isNegative {
 		numA, err := strconv.Atoi(input)
 		if err != nil || numA < 1 || numA > 10 {
-			return "", fmt.Errorf("ошибка: введите %s арабское число от 1 до 10 включительно", variableName)
+			return input, fmt.Errorf("Ошибка: введите отрицательное арабское число от 1 до 10 включительно")
 		}
+		// Вернуть отрицательное число в виде строки
 		return strconv.Itoa(numA), nil
 	}
+	// Вернуть положительное число без изменений
 	return input, nil
 }
 
@@ -168,7 +169,6 @@ func arabicToRoman(num int) string {
 	return result
 }
 
-// Функция для парсинга чисел
 func parseNumber(str string, isRoman bool, variableName string) (int, bool) {
 	if isRoman {
 		romanToArabic := map[string]int{
@@ -177,15 +177,16 @@ func parseNumber(str string, isRoman bool, variableName string) (int, bool) {
 		}
 
 		// Проверка, что введенное римское число существует в мапе
-		if arabicNum, exists := romanToArabic[str]; exists {
-			return arabicNum, true
+		num, ok := romanToArabic[str]
+		if !ok {
+			fmt.Printf("Ошибка: введите %s римское число от I до X включительно\n", variableName)
+			return 0, false
 		}
-		fmt.Printf("Ошибка: введите %s римское число от I до X включительно\n", variableName)
-		return 0, false
+		return num, true
 	}
 
 	num, err := strconv.Atoi(str)
-	if err != nil {
+	if err != nil || num < 1 || num > 10 {
 		fmt.Printf("Ошибка: введите %s арабское число от 1 до 10 включительно\n", variableName)
 		return 0, false
 	}
