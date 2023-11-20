@@ -156,8 +156,8 @@ func processArabicNumber(input string, isNegative bool) (string, error) {
 
 // Функция для преобразования арабского числа в римское
 func arabicToRoman(num int) string {
-	romanDigits := []string{"I", "IV", "V", "IX", "X"}
-	romanValues := []int{1, 4, 5, 9, 10}
+	romanDigits := []string{"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C"}
+	romanValues := []int{1, 4, 5, 9, 10, 40, 50, 90, 100}
 
 	result := ""
 	for i := len(romanDigits) - 1; i >= 0; i-- {
