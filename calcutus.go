@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -13,42 +15,50 @@ func main() {
 	// Правила ввода чисел
 	fmt.Println("Вводимые числа должны быть следующего вида:")
 	fmt.Println("\n1. Aрабские: - (От 1 до 10 включительно)")
-	fmt.Println("Пример ввода: 2+2")
+	fmt.Println("Пример ввода: 2 + 2 ")
 	fmt.Println("- - - - - - - - - - - - - - - - - - - - - -")
 	fmt.Println("2. Римские: - (От I до X включительно)")
-	fmt.Printf("Пример ввода: II+II\n")
+	fmt.Print("Пример ввода: II + II\n")
 
 	// Подсказка о допустимых выражениях
-	fmt.Println("________________________________________________")
-	fmt.Println(" F.A.Q Недопустим ввод выражение вида: I+2, 2+I;")
-	fmt.Println("________________________________________________")
+	fmt.Println("____________________________________________________")
+	fmt.Println(" F.A.Q Недопустим ввод выражение вида: I + 2, 2 + I;")
+	fmt.Println("____________________________________________________")
 
 	// Чтение ввода пользователя
-	var input string
+	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Введите выражение: ")
-	_, err := fmt.Scan(&input)
+	input, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Ошибка чтения ввода:", err)
 		return
 	}
 
-	// Проверка на отрицательное число
-	isNegative := false
-	if strings.HasPrefix(input, "-") {
-		isNegative = true
-		input = input[1:]
-	}
-
-	// Разделение ввода на числа и операцию
-	operatorIndex := strings.IndexAny(input, "+-*/")
-	if operatorIndex == -1 {
+	// Используйте strings.Fields для разделения ввода на слова (поля)
+	fields := strings.Fields(input)
+	if len(fields) != 3 {
 		fmt.Println("Ошибка: некорректное выражение")
 		return
 	}
 
 	// Получение чисел и оператора
-	a := input[:operatorIndex]
-	b := input[operatorIndex+1:]
+	a := fields[0]
+	operator := fields[1]
+	b := fields[2]
+
+	// Проверка на отрицательное число
+	isNegative := false
+	if strings.HasPrefix(a, "-") {
+		isNegative = true
+		a = a[1:]
+	}
+
+	// Разделение ввода на числа и операцию
+	operatorIndex := strings.IndexAny(operator, "+-*/")
+	if operatorIndex == -1 {
+		fmt.Println("Ошибка: некорректное выражение")
+		return
+	}
 
 	// Проверка, является ли число арабским, и применение отрицания только для арабских чисел
 	if isRomanNumber(a) {
@@ -101,7 +111,7 @@ func main() {
 	// Выполнение операции
 	result := 0
 
-	switch string(input[operatorIndex]) {
+	switch operator {
 	case "+":
 		result = numA + numB
 
